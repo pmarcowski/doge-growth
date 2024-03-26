@@ -10,6 +10,10 @@
 # This is the UI logic of a Shiny web application for predicting dog growth
 
 ui <- page_sidebar(
+  
+  # Set app title
+  window_title = "Forecast Dog Growth", 
+  
   # Set theme for the app
   theme = bs_theme(
     bootswatch = "shiny") |> 
