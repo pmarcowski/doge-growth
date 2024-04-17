@@ -13,35 +13,51 @@ server <- function(input, output, session) {
   
   # Initialize data for new dog details
   D <- reactiveValues()
-
+  
   # Update dog details based on user input
   observe({
     D$breed <- input$breed
     D$sex <- input$sex
     D$current_weight_lbs <- input$current_weight_slider
-    
-    # Enable or disable age slider or birthdate input based on switch
+  })
+  
+  # Update the age input UI based on the selected input type
+  observe({
     if (input$switch_age_input == "Birth date") {
       disable("current_age_slider")
       enable("birthdate")
-      D$current_age_weeks <- as.numeric(difftime(ymd(Sys.Date()), input$birthdate, units = "weeks"))
     } else if (input$switch_age_input == "Slider") {
       disable("birthdate")
       enable("current_age_slider")
-      D$current_age_weeks <- input$current_age_slider
+    }
+  })
+  
+  # Calculate current age in weeks based on the selected input type
+  current_age_weeks <- reactive({
+    if (input$switch_age_input == "Birth date") {
+      req(input$birthdate)
+      as.numeric(difftime(Sys.Date(), input$birthdate, units = "weeks"))
+    } else if (input$switch_age_input == "Slider") {
+      req(input$current_age_slider)
+      input$current_age_slider
+    }
+  })
+  
+  # Enable or disable the predict button based on input validity
+  observe({
+    valid_breed <- !is.null(input$breed) && input$breed != "Select breed"
+    valid_sex <- !is.null(input$sex) && input$sex != "Select sex"
+    valid_weight <- !is.null(input$current_weight_slider) && is.numeric(input$current_weight_slider)
+    
+    if (input$switch_age_input == "Birth date") {
+      valid_age <- !is.null(input$birthdate)
+    } else if (input$switch_age_input == "Slider") {
+      valid_age <- !is.null(input$current_age_slider)
+    } else {
+      valid_age <- FALSE
     }
     
-    # Enable or disable the predict button based on input validity
-    if (any(
-      is.null(input$birthdate),
-      is.na(input$birthdate),
-      is.null(input$current_weight_slider),
-      is.null(input$breed),
-      is.null(input$sex),
-      !is.numeric(input$current_weight_slider),
-      input$breed == "Select breed",
-      input$sex == "Select sex"
-    )) {
+    if (any(!valid_breed, !valid_sex, !valid_weight, !valid_age)) {
       disable("predict_weight")
     } else {
       enable("predict_weight")
@@ -53,11 +69,14 @@ server <- function(input, output, session) {
     # Get model input values for new dog
     breed <- D$breed
     sex <- D$sex
-    current_age <- D$current_age_weeks
+    current_age <- current_age_weeks()
     current_weight <- D$current_weight_lbs
+    
+    # Calculate max age by rounding up to nearest hundred
+    max_age <- ceiling(current_age / 100) * 100
 
     # Create data frame for new dog
-    new_dog <- data.frame(age_weeks = 0:100)
+    new_dog <- data.frame(age_weeks = 0:max_age)
     new_dog$breed <- breed
     new_dog$sex <- sex
     
@@ -72,10 +91,8 @@ server <- function(input, output, session) {
     new_dog$CI_low <- adjusted_weights[, 2]
     new_dog$CI_high <- adjusted_weights[, 3]
     
-    # Check for negative predicted weights
-    new_dog$predicted_weights[new_dog$predicted_weights < 0] <- 0
-    new_dog$CI_low[new_dog$CI_low < 0] <- 0
-    new_dog$CI_high[new_dog$CI_high < 0] <- 0
+    # Filter data to include only predicted weights greater than 0
+    new_dog <- new_dog[new_dog$predicted_weights > 0 & new_dog$CI_low > 0 & new_dog$CI_high > 0, ]
     
     # Check for a negative trend
     slope <- coef(lm(predicted_weights ~ age_weeks, data = new_dog))[2]
@@ -123,7 +140,7 @@ server <- function(input, output, session) {
       geom_hline(yintercept = current_weight, linetype = "dashed") +
       labs(x = "Age (weeks)", y = "Weight (lbs)") +
       coord_cartesian(
-        xlim = c(0, 100),
+        xlim = c(0, max(new_dog$age_weeks)),
         ylim = c(0, round(max(new_dog$predicted_weights) + 20, -1))
       ) +
       theme_minimal()
