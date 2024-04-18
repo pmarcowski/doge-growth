@@ -1,6 +1,8 @@
 # Dog growth curve prediction model and application
 This repository contains scripts for building a predictive model of dog growth trajectories and an interactive Shiny web application for generating personalized growth predictions. The model utilizes a Bayesian non-linear mixed effects approach, assuming a biologically-inspired von Bertalanffy growth curve. It incorporates breed and sex as grouping factors to account for variation across different subpopulations. The Shiny application provides an interface for inputting dog characteristics and visualizing predicted growth curves with uncertainty intervals.
 
+Try the live demo of the application here: [Live Demo](https://tinyurl.com/doge-growth).
+
 ## License
 This code is licensed under the MIT license found in the LICENSE file in the root directory of this source tree.
 
