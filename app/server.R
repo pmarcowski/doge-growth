@@ -148,7 +148,10 @@ server <- function(input, output, session) {
     # Render prediction plot as plotly
     output$predict_plot <- renderPlotly({
       ggplotly(p, tooltip = "none") %>%
-        layout(hovermode = "x") %>%
+        layout(
+          hovermode = "x",
+          dragmode = FALSE
+          ) %>%
         style(
           hovertemplate = paste(
             "<b>Age:</b> %{x:.0f} weeks",
@@ -168,7 +171,8 @@ server <- function(input, output, session) {
           customdata = cbind(new_dog$CI_low, new_dog$CI_high),
           traces = 2,
           showlegend = FALSE
-        )
+        ) %>%
+        config(responsive = TRUE)
     })
   })
 }
