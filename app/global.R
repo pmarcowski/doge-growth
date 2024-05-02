@@ -28,20 +28,27 @@ growth_model <- readRDS(file = "growth_model.Rds")
 # Get available breeds
 breeds_list <- as.character(unique(dog_data$breed))
 
-# Define model information text
-model_info_text <- HTML("
-<p>This app uses a canine growth prediction model built with publicly available 
-data sources. The model utilizes the biologically-inspired Bertalanffy growth 
-function to depict sigmoidal growth (a common biological phenomenon). 
-The function is mathematically defined as:</p>
+# Define about information text
+about_info_text <- HTML("
+<p>Welcome to the Dog Growth Prediction App! I'm Przemek, a San Diego-based
+researcher and data scientist with a passion for using data to make things
+more interesting. I built this app initially to track the growth of my Labrador 
+puppy Charlie and wanted to share it with other dog lovers as well.</p>
 
-$$L_{inf} * (1 - exp(-K * (age - t_0)))$$
+<p>You can explore my other work <a href='https://przemyslawmarcowski.com' target='_blank'>here</a>.</p>
 
-<p>where 'Linf', 'K', and 't0' denote parameters related to asymptotic growth length, 
-growth rate, and the hypothetical age at which size is zero, respectively.
+<p>This app uses a canine growth prediction model built with publicly available
+data sources. The model utilizes the Bertalanffy growth function, a common
+biological phenomenon depicting sigmoidal growth. The function is mathematically
+defined as:</p>
+
+$$L_{inf} (1 - exp(-K (age - t_0)))$$
+
+<p>where <em>Linf</em> denotes the asymptotic growth length, <em>K</em> represents 
+the growth rate, and <em>t0</em> is the hypothetical age at which size is zero. 
 The model has been adapted for canine growth prediction and fitted in a Bayesian 
-mixed-effects framework. This allows for breed and sex-based parameter variability, 
-providing a robust tool for estimating individual canine growth patterns.</p>
+mixed-effects framework, allowing for breed and sex-based parameter variability. 
+This provides a robust tool for estimating individual canine growth patterns.</p>
 ")
 
 # Define model information text
