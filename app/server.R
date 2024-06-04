@@ -10,18 +10,24 @@
 # This is the UI logic of a Shiny web application for predicting dog growth
 
 server <- function(input, output, session) {
-  
-  # Initialize data for new dog details
-  D <- reactiveValues()
-  
-  # Update dog details based on user input
-  observe({
-    D$breed <- input$breed
-    D$sex <- input$sex
-    D$current_weight_lbs <- input$current_weight_slider
+  # Initialize reactive value to track if predict button has been clicked
+  predict_clicked <- reactiveVal(FALSE)
+
+  # Observe predict button click
+  observeEvent(input$predict_weight, {
+    predict_clicked(TRUE)
   })
-  
-  # Update the age input UI based on the selected input type
+
+  # Render placeholder text if predict button has not been clicked
+  output$placeholder_text <- renderUI({
+    if (!predict_clicked()) {
+      h3("Enter your dog's details and click 'Calculate' to start.")
+    } else {
+      NULL
+    }
+  })
+
+  # Update age input UI based on selected input type
   observe({
     if (input$switch_age_input == "Birth date") {
       disable("current_age_slider")
@@ -31,8 +37,18 @@ server <- function(input, output, session) {
       enable("current_age_slider")
     }
   })
-  
-  # Calculate current age in weeks based on the selected input type
+
+  # Initialize data for new dog details
+  D <- reactiveValues()
+
+  # Update dog details based on user input
+  observe({
+    D$breed <- input$breed
+    D$sex <- input$sex
+    D$current_weight_lbs <- input$current_weight_slider
+  })
+
+  # Calculate current age in weeks based on selected input type
   current_age_weeks <- reactive({
     if (input$switch_age_input == "Birth date") {
       req(input$birthdate)
@@ -42,36 +58,39 @@ server <- function(input, output, session) {
       input$current_age_slider
     }
   })
-  
-  # Enable or disable the predict button based on input validity
+
+  # Enable or disable predict button based on input validity
   observe({
-    valid_breed <- !is.null(input$breed) && input$breed != "Select breed"
-    valid_sex <- !is.null(input$sex) && input$sex != "Select sex"
-    valid_weight <- !is.null(input$current_weight_slider) && is.numeric(input$current_weight_slider)
-    
-    if (input$switch_age_input == "Birth date") {
-      valid_age <- !is.null(input$birthdate)
-    } else if (input$switch_age_input == "Slider") {
-      valid_age <- !is.null(input$current_age_slider)
-    } else {
-      valid_age <- FALSE
-    }
-    
-    if (any(!valid_breed, !valid_sex, !valid_weight, !valid_age)) {
-      disable("predict_weight")
-    } else {
+    valid_inputs <- all(
+      !is.null(input$breed) && input$breed != "Select breed",
+      !is.null(input$sex) && input$sex != "Select sex",
+      !is.null(input$current_weight_slider) && is.numeric(input$current_weight_slider),
+      if (input$switch_age_input == "Birth date") !is.null(input$birthdate) else !is.null(input$current_age_slider)
+    )
+
+    if (valid_inputs) {
       enable("predict_weight")
+    } else {
+      disable("predict_weight")
     }
   })
 
-  # Calculate growth curve when the predict button is clicked
+  # Calculate growth curve when predict button is clicked
   observeEvent(input$predict_weight, {
+    # Validate inputs before proceeding
+    req(
+      input$breed != "Select breed",
+      input$sex != "Select sex",
+      input$current_weight_slider,
+      current_age_weeks()
+    )
+
     # Get model input values for new dog
     breed <- D$breed
     sex <- D$sex
     current_age <- current_age_weeks()
     current_weight <- D$current_weight_lbs
-    
+
     # Calculate max age by rounding up to nearest hundred
     max_age <- ceiling(current_age / 100) * 100
 
@@ -79,10 +98,10 @@ server <- function(input, output, session) {
     new_dog <- data.frame(age_weeks = 0:max_age)
     new_dog$breed <- breed
     new_dog$sex <- sex
-    
+
     # Get prediction for new dog
     predicted_weights <- predict(growth_model, newdata = new_dog, allow_new_levels = TRUE)[, -2]
-    
+
     # Apply weight scaling for new dog
     predicted_current_weight <- predicted_weights[current_age]
     scaling_factor <- current_weight / predicted_current_weight
@@ -90,42 +109,42 @@ server <- function(input, output, session) {
     new_dog$predicted_weights <- adjusted_weights[, 1]
     new_dog$CI_low <- adjusted_weights[, 2]
     new_dog$CI_high <- adjusted_weights[, 3]
-    
+
     # Filter data to include only predicted weights greater than 0
     new_dog <- new_dog[new_dog$predicted_weights > 0 & new_dog$CI_low > 0 & new_dog$CI_high > 0, ]
-    
-    # Check for a negative trend
+
+    # Check for negative trend
     slope <- coef(lm(predicted_weights ~ age_weeks, data = new_dog))[2]
     if (slope < 0) {
       showNotification(
-        "Warning: Negative trend detected in predicted weights.", 
+        "Warning: Negative trend detected in predicted weights.",
         duration = NULL, id = "trend_warning", type = "warning"
-        )
+      )
     } else {
       removeNotification(id = "trend_warning")
     }
-    
+
     # Check for significant discrepancies between current and typical weight
     if (scaling_factor > 1.5 || scaling_factor < .5) {
       showNotification(
-        "Warning: Significant discrepancy detected between current and typical weight.", 
+        "Warning: Significant discrepancy detected between current and typical weight.",
         duration = NULL, id = "discrepancy_warning", type = "warning"
-        )
+      )
     } else {
       removeNotification(id = "discrepancy_warning")
     }
-    
+
     # Check for unrealistic growth rates
     growth_rates <- diff(new_dog$predicted_weights) / diff(new_dog$age_weeks)
     if (any(growth_rates < -1) || any(growth_rates > 10)) {
       showNotification(
-        "Warning: Unrealistic growth rates detected.", 
+        "Warning: Unrealistic growth rates detected.",
         duration = NULL, id = "rate_warning", type = "warning"
-        )
+      )
     } else {
       removeNotification(id = "rate_warning")
     }
-    
+
     # Create prediction plot
     p <-
       ggplot(new_dog, aes(x = age_weeks, y = predicted_weights)) +
@@ -144,14 +163,14 @@ server <- function(input, output, session) {
         ylim = c(0, round(max(new_dog$predicted_weights) + 20, -1))
       ) +
       theme_minimal()
-    
+
     # Render prediction plot as plotly
     output$predict_plot <- renderPlotly({
       ggplotly(p, tooltip = "none") %>%
         layout(
           hovermode = "x",
           dragmode = FALSE
-          ) %>%
+        ) %>%
         style(
           hovertemplate = paste(
             "<b>Age:</b> %{x:.0f} weeks",

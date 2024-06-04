@@ -15,32 +15,21 @@ ui <- page_sidebar(
   window_title = "Predict dog growth", 
   
   # Set theme for the app
-  theme = bs_theme(
-    bootswatch = "shiny") |> 
-    # Define custom CSS styles for shiny notifications
-    bs_add_rules(
-      list(
-        "#shiny-notification-panel {
-          position: fixed;
-          left: calc(0%);
-          z-index: 99999;
-        }"
-        )
-      ),
+  theme = bs_theme(bootswatch = "shiny"),
   
-  # Include additional JavaScript functionality
+  # Include JavaScript functionality
   useShinyjs(),
+  
+  # Include CSS style
+  includeCSS("www/style.css"),
   
   # Define sidebar layout
   sidebar = sidebar(
     width = 400,
     
-    # Add title header for the app
+    # Add title header for app
     div(
-      style = "
-        text-align: center;
-        color: #0275d8;
-      ",
+      class = "title-header",
       h5("Predict dog growth")
     ),
     
@@ -81,5 +70,11 @@ ui <- page_sidebar(
   ),
   
   # Define main content area
-  card(plotlyOutput("predict_plot", width = "100%", height = "95vh"))
+  card(
+    div(
+      style = "height: 90vh; position: relative;",
+      uiOutput("placeholder_text", class = "centered-placeholder"),
+      plotlyOutput("predict_plot", width = "100%", height = "100%")
+    )
+  )
 )

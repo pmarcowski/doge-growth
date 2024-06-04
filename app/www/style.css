@@ -1,0 +1,23 @@
+.title-header {
+  text-align: center;
+  color: #0275d8;
+}
+
+.centered-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  color: grey;
+  position: absolute;
+}
+
+#shiny-notification-panel {
+  position: fixed;
+  left: calc(0%);
+  z-index: 99999;
+  width: 100%;
+  max-width: 400px;
+}

@@ -12,18 +12,18 @@
 # Import packages
 library(shiny)
 library(bslib)
-library(shinyFeedback)
 library(shinyjs)
+library(shinyFeedback)
 library(tidyverse)
 library(lubridate)
 library(brms)
 library(plotly)
 
 # Load dog age and weight database
-dog_data <- readRDS(file = "dog_data.Rds")
+dog_data <- readRDS(file = "data/dog_data.Rds")
 
 # Load fitted growth model
-growth_model <- readRDS(file = "growth_model.Rds")
+growth_model <- readRDS(file = "model/growth_model.Rds")
 
 # Get available breeds
 breeds_list <- as.character(unique(dog_data$breed))
@@ -32,7 +32,7 @@ breeds_list <- as.character(unique(dog_data$breed))
 about_info_text <- HTML("
 <p>Welcome to the Dog Growth Prediction App! I'm Przemek, a San Diego-based
 researcher and data scientist with a passion for using data to make things
-more interesting. I built this app initially to track the growth of my Labrador 
+more interesting. I built this app initially to track the growth of my Labrador
 puppy Charlie and wanted to share it with other dog lovers as well.</p>
 
 <p>You can explore my other work <a href='https://przemyslawmarcowski.com' target='_blank'>here</a>.</p>
@@ -44,10 +44,10 @@ defined as:</p>
 
 $$L_{inf} (1 - exp(-K (age - t_0)))$$
 
-<p>where <em>Linf</em> denotes the asymptotic growth length, <em>K</em> represents 
-the growth rate, and <em>t0</em> is the hypothetical age at which size is zero. 
-The model has been adapted for canine growth prediction and fitted in a Bayesian 
-mixed-effects framework, allowing for breed and sex-based parameter variability. 
+<p>where <em>Linf</em> denotes the asymptotic growth length, <em>K</em> represents
+the growth rate, and <em>t0</em> is the hypothetical age at which size is zero.
+The model has been adapted for canine growth prediction and fitted in a Bayesian
+mixed-effects framework, allowing for breed and sex-based parameter variability.
 This provides a robust tool for estimating individual canine growth patterns.</p>
 ")
 
@@ -60,10 +60,10 @@ breeds or individual dogs. Various factors, such as genetics, nutrition, health
 status, and environment, can influence an individual dog's growth.</p>
 
 <p>Interpret the predictions as general guidelines, not definitive outcomes.
-Consult with a veterinary nutrition specialist for personalized advice and 
-regularly monitor your dog's growth and development. The creator of this 
-application cannot make any warranties about the completeness, accuracy, 
-reliability, suitability, or availability of the model, application, 
+Consult with a veterinary nutrition specialist for personalized advice and
+regularly monitor your dog's growth and development. The creator of this
+application cannot make any warranties about the completeness, accuracy,
+reliability, suitability, or availability of the model, application,
 or information contained therein.</p>
 
 <p>By using this application, you agree to this disclaimer and acknowledge the
