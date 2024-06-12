@@ -42,8 +42,8 @@ ui <- page_sidebar(
         p("To predict growth, enter your dog's details and click 'Calculate'."),
         selectizeInput("breed", "Breed", choices = c("Select breed", breeds_list), selected = "Select breed"),
         selectizeInput("sex", "Sex", choices = c("Select sex", "Male", "Female"), selected = "Select sex"),
-        sliderInput("current_age_slider", "Current age (weeks)", value = 1, min = 1, max = 200),
         radioButtons("switch_age_input", "Age by slider or birthdate?", choices = c("Slider", "Birth date"), selected = "Slider", inline = TRUE),
+        sliderInput("current_age_slider", "Current age (weeks)", value = 1, min = 1, max = 200),
         dateInput("birthdate", "Birth date", value = as_date(NA)),
         sliderInput("current_weight_slider", "Current weight (lbs)", value = 100, min = 1, max = 200),
         actionButton("predict_weight", "Calculate", width = "100%", class = "btn-primary")
