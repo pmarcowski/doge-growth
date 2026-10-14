@@ -1,0 +1,23 @@
+# source data (download links in README)
+data/raw/
+data/derived/*.parquet
+data/derived/*.log
+
+# python / node
+__pycache__/
+*.pyc
+.ruff_cache/
+node_modules/
+.venv/
+
+# Posit Publisher configuration and deployment record (app/.posit/publish/)
+.posit/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Internal
+work/

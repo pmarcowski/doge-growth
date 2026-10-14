@@ -1,0 +1,39 @@
+{
+ "note": "corr(z(s), z(s')) = (1 - nugget) * exp(-|s - s'| / ell), s = transformed age in years; nugget = share of z variance that is measurement/short-term noise. 'weight' = z on breed-adjusted charts (used when a breed or adult weight is known); 'category' = z on the size-category charts (used when the chart is fitted to the weigh-ins). Maximum likelihood on dogs with >= 2 weights.",
+ "weight": {
+  "transform": "log",
+  "nugget": 0.0659,
+  "ell": 2.863,
+  "n_dogs": 38608,
+  "n_weights": 170938,
+  "validation": {
+   "n_dogs": 31771,
+   "rmse_gp": 0.49234083340749896,
+   "rmse_same_centile": 0.5350451289238356,
+   "rmse_population_median": 0.8701107906977927,
+   "coverage": {
+    "50%": 0.6312989833495956,
+    "80%": 0.8650341506405212,
+    "95%": 0.9517169745994775
+   }
+  }
+ },
+ "category": {
+  "transform": "log",
+  "nugget": 0.0614,
+  "ell": 3.0671,
+  "n_dogs": 38608,
+  "n_weights": 170938,
+  "validation": {
+   "n_dogs": 31771,
+   "rmse_gp": 0.487634806036648,
+   "rmse_same_centile": 0.5211763960275819,
+   "rmse_population_median": 0.982244868528945,
+   "coverage": {
+    "50%": 0.6212269050391866,
+    "80%": 0.8607849926033175,
+    "95%": 0.9499228856504359
+   }
+  }
+ }
+}

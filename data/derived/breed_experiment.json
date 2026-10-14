@@ -1,0 +1,219 @@
+{
+ "split": "20% of dogs held out by PET_ID hash",
+ "n_breed_charts": 41,
+ "min_breed_weights": 1200,
+ "n_test_dogs": 8383,
+ "results": {
+  "category": {
+   "T1_one_early_weighin_to_adult": {
+    "n": 1328,
+    "rmse_log_kg": 0.191,
+    "median_abs_pct": 10.61,
+    "mean_bias_pct": 1.11,
+    "cover50": 0.516,
+    "cover90": 0.914,
+    "cover95": 0.954
+   },
+   "T2_last_from_previous": {
+    "n": 5872,
+    "rmse_log_kg": 0.1189,
+    "median_abs_pct": 5.47,
+    "mean_bias_pct": 0.68,
+    "cover50": 0.635,
+    "cover90": 0.917,
+    "cover95": 0.948
+   },
+   "T3_breed_centring": {
+    "median_abs_breed_mean_z": 0.353,
+    "max_abs_breed_mean_z": 0.946
+   },
+   "tracking": {
+    "nugget": 0.0612,
+    "ell": 3.086
+   }
+  },
+  "breed": {
+   "T1_one_early_weighin_to_adult": {
+    "n": 1328,
+    "rmse_log_kg": 0.1643,
+    "median_abs_pct": 9.44,
+    "mean_bias_pct": -0.43,
+    "cover50": 0.5,
+    "cover90": 0.904,
+    "cover95": 0.952
+   },
+   "T2_last_from_previous": {
+    "n": 5872,
+    "rmse_log_kg": 0.1145,
+    "median_abs_pct": 5.18,
+    "mean_bias_pct": 0.28,
+    "cover50": 0.623,
+    "cover90": 0.914,
+    "cover95": 0.946
+   },
+   "T3_breed_centring": {
+    "median_abs_breed_mean_z": 0.054,
+    "max_abs_breed_mean_z": 0.161
+   },
+   "tracking": {
+    "nugget": 0.0905,
+    "ell": 2.229
+   }
+  },
+  "scaled": {
+   "T1_one_early_weighin_to_adult": {
+    "n": 1328,
+    "rmse_log_kg": 0.1709,
+    "median_abs_pct": 9.68,
+    "mean_bias_pct": 0.66,
+    "cover50": 0.58,
+    "cover90": 0.933,
+    "cover95": 0.963
+   },
+   "T2_last_from_previous": {
+    "n": 5872,
+    "rmse_log_kg": 0.116,
+    "median_abs_pct": 5.24,
+    "mean_bias_pct": 0.53,
+    "cover50": 0.651,
+    "cover90": 0.923,
+    "cover95": 0.951
+   },
+   "T3_breed_centring": {
+    "median_abs_breed_mean_z": 0.079,
+    "max_abs_breed_mean_z": 0.759
+   },
+   "tracking": {
+    "nugget": 0.0601,
+    "ell": 3.015
+   }
+  },
+  "interpolated": {
+   "T1_one_early_weighin_to_adult": {
+    "n": 1328,
+    "rmse_log_kg": 0.1705,
+    "median_abs_pct": 9.84,
+    "mean_bias_pct": 0.41,
+    "cover50": 0.543,
+    "cover90": 0.933,
+    "cover95": 0.963
+   },
+   "T2_last_from_previous": {
+    "n": 5872,
+    "rmse_log_kg": 0.1154,
+    "median_abs_pct": 5.14,
+    "mean_bias_pct": 0.39,
+    "cover50": 0.643,
+    "cover90": 0.92,
+    "cover95": 0.95
+   },
+   "T3_breed_centring": {
+    "median_abs_breed_mean_z": 0.063,
+    "max_abs_breed_mean_z": 0.756
+   },
+   "tracking": {
+    "nugget": 0.0665,
+    "ell": 2.868
+   }
+  }
+ },
+ "category_reference_weights": {
+  "I_F": 4.585,
+  "I_M": 4.719,
+  "II_F": 7.873,
+  "II_M": 7.964,
+  "III_F": 11.654,
+  "III_M": 11.678,
+  "IV_F": 25.994,
+  "IV_M": 26.286,
+  "V_F": 34.157,
+  "V_M": 34.152,
+  "VI_F": 44.19,
+  "VI_M": 43.591
+ },
+ "T1_adult_weight_error_sensitivity": {
+  "n_dogs": 1402,
+  "draws_per_sigma": 8,
+  "shrink_factors": {
+   "I": 0.855,
+   "II": 0.212,
+   "III": 0.697,
+   "IV": 0.395,
+   "V": 0.002,
+   "VI": 0.47
+  },
+  "sigma_assumed_for_shrinkage": 0.1,
+  "results": {
+   "0.0": {
+    "category": {
+     "rmse_log_kg": 0.1922,
+     "median_abs_pct": 10.73
+    },
+    "interpolated": {
+     "rmse_log_kg": 0.1705,
+     "median_abs_pct": 9.63
+    },
+    "shrunk": {
+     "rmse_log_kg": 0.1707,
+     "median_abs_pct": 9.84
+    }
+   },
+   "0.05": {
+    "category": {
+     "rmse_log_kg": 0.1972,
+     "median_abs_pct": 11.04
+    },
+    "interpolated": {
+     "rmse_log_kg": 0.1746,
+     "median_abs_pct": 10.16
+    },
+    "shrunk": {
+     "rmse_log_kg": 0.1779,
+     "median_abs_pct": 10.2
+    }
+   },
+   "0.1": {
+    "category": {
+     "rmse_log_kg": 0.2065,
+     "median_abs_pct": 11.66
+    },
+    "interpolated": {
+     "rmse_log_kg": 0.186,
+     "median_abs_pct": 11.23
+    },
+    "shrunk": {
+     "rmse_log_kg": 0.189,
+     "median_abs_pct": 10.94
+    }
+   },
+   "0.15": {
+    "category": {
+     "rmse_log_kg": 0.2188,
+     "median_abs_pct": 12.29
+    },
+    "interpolated": {
+     "rmse_log_kg": 0.2037,
+     "median_abs_pct": 12.52
+    },
+    "shrunk": {
+     "rmse_log_kg": 0.2038,
+     "median_abs_pct": 11.89
+    }
+   },
+   "0.2": {
+    "category": {
+     "rmse_log_kg": 0.2317,
+     "median_abs_pct": 13.37
+    },
+    "interpolated": {
+     "rmse_log_kg": 0.2262,
+     "median_abs_pct": 14.02
+    },
+    "shrunk": {
+     "rmse_log_kg": 0.2213,
+     "median_abs_pct": 13.27
+    }
+   }
+  }
+ }
+}

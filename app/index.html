@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Doge Growth</title>
+  <meta name="description" content="Growth centiles, adult-weight projection and daily energy needs for a growing dog, from open veterinary growth standards.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Ccircle%20cx='12'%20cy='12'%20r='11'%20fill='%230b57d0'/%3E%3Cpath%20d='M5%2017%20Q10%206%2019%207'%20stroke='white'%20stroke-width='2.5'%20fill='none'%20stroke-linecap='round'/%3E%3C/svg%3E">
+  <!-- theme before first paint: the saved choice, else the system setting -->
+  <script>(function () { var t = null; try { t = localStorage.getItem("doge-growth-theme"); } catch (e) { /* storage unavailable */ } if (t !== "dark" && t !== "light") t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; document.documentElement.dataset.theme = t; })();</script>
+</head>
+<body>
+  <!-- The bar's contents line up with the card contents below: the title with the left column's text, the weight
+       units with the energy units at the right. The download button appears first in the group once a weigh-in is
+       charted, so the other buttons never move. -->
+  <header class="top-bar">
+    <div class="top-bar__inner">
+      <div class="top-bar__title">
+        <span class="icon top-bar__icon" data-icon="pets" aria-hidden="true"></span>
+        <h1 class="title-large top-bar__name">Doge Growth</h1>
+      </div>
+      <div class="top-bar__actions">
+        <button type="button" class="icon-btn" id="downloadBtn" aria-label="Download table (CSV)" title="Download table (CSV)" hidden><span class="icon" data-icon="download"></span></button>
+        <button type="button" class="icon-btn" id="themeToggle" aria-label="Dark theme" aria-pressed="false" title="Dark theme"><span class="icon" data-icon="dark_mode"></span></button>
+        <button type="button" class="icon-btn" id="helpBtn" aria-label="How this works" aria-haspopup="dialog" aria-controls="helpDialog" title="How this works"><span class="icon" data-icon="help"></span></button>
+        <a class="icon-btn" id="codeLink" href="https://github.com/pmarcowski/doge-growth" aria-label="Source code on GitHub" title="Source code"><span class="icon" data-icon="code"></span></a>
+        <div class="segmented segmented--small" role="group" aria-label="Weight units">
+          <button type="button" class="segmented__btn is-selected" data-unit="kg">kg</button>
+          <button type="button" class="segmented__btn" data-unit="lb">lb</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Two aligned rows: growth (dog and weigh-ins | summary and chart) and energy (feeding | daily energy).
+       Each row's cards share top and bottom edges; on narrow screens the cells stack in this order. -->
+  <main class="layout">
+    <div class="cell">
+      <div class="card" id="dogCard">
+        <div class="card__header"><h2 class="title-medium card__title">Your dog</h2><button type="button" class="btn btn--text" id="resetAll">Reset</button></div>
+        <div class="field">
+          <label class="field__label" for="dogName">Name <span class="field__hint">optional</span></label>
+          <input class="field__input" id="dogName" type="text" placeholder="e.g. Charlie" autocomplete="off" maxlength="40">
+        </div>
+        <div class="field">
+          <span class="field__label">Sex</span>
+          <div class="segmented" role="group" aria-label="Sex">
+            <button type="button" class="segmented__btn is-selected" data-sex="M"><span class="icon icon--sm segmented__check" data-icon="check"></span>Male</button>
+            <button type="button" class="segmented__btn" data-sex="F"><span class="icon icon--sm segmented__check" data-icon="check"></span>Female</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="breed">Breed</label>
+          <div class="dropdown" id="breedDropdown">
+            <input class="field__input dropdown__input" id="breed" placeholder="Type a breed, or Mixed / other" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="breedMenu" aria-autocomplete="list">
+            <span class="icon dropdown__chevron" data-icon="expand_more" aria-hidden="true"></span>
+            <div class="menu" id="breedMenu" role="listbox" aria-label="Breeds" hidden></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="adultWeight">Expected adult weight, <span class="unit-label">kg</span></label>
+          <input class="field__input" id="adultWeight" type="number" inputmode="decimal" min="0.5" max="120" step="0.1" placeholder="e.g. 30">
+          <p class="field__support" id="chartInfo">Pre-filled from breed. Change it if you know parents' size.</p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="birthDate" id="ageLabel">Date of birth</label>
+          <div class="input-group input-group--age">
+            <input class="field__input" id="birthDate" type="date">
+            <input class="field__input" id="ageMonths" type="number" inputmode="decimal" min="0" max="240" step="0.1" placeholder="e.g. 4" hidden>
+            <div class="segmented segmented--field" role="group" aria-label="Enter age as">
+              <button type="button" class="segmented__btn is-selected" data-agemode="date">Date</button>
+              <button type="button" class="segmented__btn" data-agemode="months">Months</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--fill weighins-card" id="weighInsCard">
+        <div class="card__header"><h2 class="title-medium card__title">Weigh-ins</h2><button type="button" class="btn btn--text" id="addWeighIn"><span class="icon icon--sm" data-icon="add"></span>Add</button></div>
+        <div id="weighIns" class="weighins"></div>
+        <div id="flags" class="flags" aria-live="polite"></div>
+        <p class="field__support weighins__note">Uses weigh-ins from 8 weeks to 2 years.</p>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="card" id="summaryCard">
+        <div class="tiles" id="tiles"></div>
+        <div class="guide-row" id="guideRow"></div>
+      </div>
+
+      <div class="card card--fill" id="chartCard">
+        <div class="card__header">
+          <h2 class="title-medium card__title" id="chartTitle">Growth chart</h2>
+          <span class="chip" id="chartChip"></span>
+        </div>
+        <div class="chart-wrap" id="growthChartWrap"><svg id="growthChart" class="chart" role="img" aria-label="Growth centile chart"></svg><div class="tooltip" id="chartTooltip" hidden></div></div>
+        <div class="legend body-small" id="chartLegend"></div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="card card--fill" id="feedingCard">
+        <h2 class="title-medium card__title">Feeding <span class="field__hint">optional</span></h2>
+        <div class="field">
+          <label class="field__label" for="foodValue">Food energy <span class="field__hint">from the label</span></label>
+          <div class="input-group">
+            <input class="field__input" id="foodValue" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 3800">
+            <div class="dropdown" id="foodPerDropdown">
+              <button type="button" class="field__input dropdown__button" id="foodPer" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="foodPerMenu" aria-label="Food energy unit"><span class="dropdown__value">kcal/kg</span></button>
+              <span class="icon dropdown__chevron" data-icon="expand_more" aria-hidden="true"></span>
+              <div class="menu" id="foodPerMenu" role="listbox" aria-label="Food energy units" hidden></div>
+            </div>
+          </div>
+          <p class="field__support field__support--warn" id="foodWarn" hidden></p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="treatShare">Treats, share of daily energy</label>
+          <div class="slider-row"><input class="slider" id="treatShare" type="range" min="0" max="25" step="1" value="0"><span class="slider-row__value" id="treatShareValue">0%</span></div>
+        </div>
+        <div class="field field--adult">
+          <label class="field__label" for="activity">Adult activity</label>
+          <div class="dropdown" id="activityDropdown">
+            <button type="button" class="field__input dropdown__button" id="activity" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="activityMenu"><span class="dropdown__value">By age (FEDIAF)</span></button>
+            <span class="icon dropdown__chevron" data-icon="expand_more" aria-hidden="true"></span>
+            <div class="menu" id="activityMenu" role="listbox" aria-label="Adult activity levels" hidden></div>
+          </div>
+        </div>
+        <div class="field field--adult switch-row">
+          <label class="switch"><input type="checkbox" id="neutered"><span class="switch__track"><span class="switch__thumb"></span></span></label>
+          <label for="neutered" class="body-medium">Neutered</label>
+        </div>
+        <div class="food" id="foodTile"></div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="card card--fill" id="energyCard">
+        <div class="card__header">
+          <h2 class="title-medium card__title">Daily energy</h2>
+          <div class="segmented segmented--small" role="group" aria-label="Energy units">
+            <button type="button" class="segmented__btn is-selected" data-eunit="kcal">kcal</button>
+            <button type="button" class="segmented__btn" data-eunit="kJ">kJ</button>
+          </div>
+        </div>
+        <div class="energy-body">
+          <div class="energy-figures">
+            <div id="energySummary" class="energy"></div>
+            <div id="energyCompare" class="compare"></div>
+          </div>
+          <div class="chart-panel">
+            <div class="chart-caption" id="energyCaption"></div>
+            <div class="chart-wrap" id="energyChartWrap"><svg id="energyChart" class="chart" role="img" aria-label="Estimated daily energy by age"></svg><div class="tooltip" id="energyTooltip" hidden></div></div>
+            <div class="legend body-small" id="energyLegend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer body-small on-surface-variant">
+    <span>Code by <a href="https://pmarcowski.com">Przemek Marcowski</a> (GPL-3.0). Standards refitted from CC BY 4.0 data; energy formulas from FEDIAF 2025, NRC 2006 and AAHA 2021.</span>
+  </footer>
+
+  <!-- Help: native modal dialog (focus moves in, stays in, Escape closes, focus returns to the ? button). The head
+       stays visible while the body scrolls; sections have headings; exponents carry hidden "to the power" text. -->
+  <dialog class="dialog" id="helpDialog" aria-labelledby="helpTitle" aria-describedby="helpIntro">
+    <div class="dialog__head">
+      <h2 class="headline-small" id="helpTitle">How this works</h2>
+      <button type="button" class="icon-btn" id="helpClose" aria-label="Close" autofocus><span class="icon" data-icon="close"></span></button>
+    </div>
+    <div class="dialog__body body-medium">
+      <p id="helpIntro">Doge Growth places a puppy's weigh-ins on veterinary growth standards, projects its adult weight and estimates daily energy. It reports estimates and their spread, not feeding or veterinary advice.</p>
+
+      <h3>Growth chart</h3>
+      <p>The lines are centiles: of 100 healthy dogs of the same sex and size, about 2 weigh less than the 2nd centile, 50 less than the 50th and 98 less than the 98th.</p>
+      <ul>
+        <li><strong>Data:</strong> 202,334 weights of 52,868 healthy purebred dogs in normal body condition (the open Banfield clinic data behind the WALTHAM puppy charts), refitted by sex for six adult-size groups, 8 weeks to 2 years.</li>
+        <li><strong>Breed:</strong> a breed or an expected adult weight sets the chart between the size groups at that weight. Breed weights come from breed standards adjusted to clinic dogs; a typed weight replaces them. In test dogs not used for fitting, this cut the median error of predicting the weight between 1 and 2 years from one weigh-in at 8–16 weeks from 10.6% to 9.8%; the gain is smaller when the breed weight is off.</li>
+      </ul>
+
+      <h3>Projection</h3>
+      <p>The projection carries the puppy's centile forward, drifting toward the median as real puppies do. The shaded bands are the 50% and 90% ranges of likely weights and narrow with each weigh-in. In test dogs not used for fitting, they held 64% and 92% of the next weigh-ins.</p>
+
+      <h3>Warnings</h3>
+      <p>A note appears under the weigh-ins when the latest weight is below the 2nd or above the 98th centile; when, since the first weigh-in, weight has crossed more than two centile lines (fewer than 1 in 10 healthy puppies do: 3% in research colonies, 8% in clinic records); or when it has not risen over 3 weeks or more in which a puppy staying on its centile gains over 5%.</p>
+
+      <h3>Daily energy</h3>
+      <p>Metabolisable energy per day, from body weight (BW, kg) and, for puppies, the share of adult weight reached (p). FEDIAF 2025 gives the main estimate; NRC 2006 and AAHA 2021 are shown for comparison.</p>
+      <table class="help-table">
+        <caption>Equations, kcal per day</caption>
+        <thead><tr><th scope="col">Guideline</th><th scope="col">Puppies</th><th scope="col">Adults</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">FEDIAF 2025</th><td>(254.1 − 135 p) × BW<sup><span class="sr-only">to the power </span>0.75</sup></td><td>130, 110 or 95 × BW<sup><span class="sr-only">to the power </span>0.75</sup> at 1–2, 3–7 or over 7 years, or by activity</td></tr>
+          <tr><th scope="row">NRC 2006</th><td>130 × BW<sup><span class="sr-only">to the power </span>0.75</sup> × 3.2 × (e<sup><span class="sr-only">to the power </span>−0.87p</sup>&nbsp;− 0.1)</td><td>95–130 × BW<sup><span class="sr-only">to the power </span>0.75</sup></td></tr>
+          <tr><th scope="row">AAHA 2021</th><td>RER × 3 under 4 months, × 2 after</td><td>RER × 1.4–1.6 neutered, 1.6–1.8 intact</td></tr>
+        </tbody>
+      </table>
+      <p>RER (resting energy requirement) = 70 × BW<sup><span class="sr-only">to the power </span>0.75</sup>. Puppy equations apply from 8 weeks until the dog is both 1 year old and at 95% of its adult weight, and up to 2 years at most. In studies of early growth, measured intake was about 15–30% below the NRC 2006 equation, and individual needs can differ from these averages by up to about 50%.</p>
+      <p><strong>Food per day</strong> is the energy left after the treat share, divided by the food's energy from its label.</p>
+
+      <h3>Table download</h3>
+      <p>Once a weigh-in is charted, the download button in the top bar saves a CSV of the key figures, the weigh-ins and a monthly projection with energy and food per day.</p>
+
+      <h3>Limits</h3>
+      <ul>
+        <li>Charts cover 8 weeks to 2 years.</li>
+        <li>The data are US purebred dogs. For mixed breeds, and for dogs expected to weigh under about 3.5 kg or over about 60 kg as adults (the range of the breeds in the data), the charts are approximations; the chart for 40 kg and over is provisional.</li>
+        <li>Projections assume healthy growth continues.</li>
+      </ul>
+
+      <h3>Sources and code</h3>
+      <ul>
+        <li>Growth standards: <a href="https://doi.org/10.1371/journal.pone.0182064">Salt et al. 2017, PLOS ONE</a>, and its <a href="https://datacat.liverpool.ac.uk/377/">open data</a> (CC BY 4.0).</li>
+        <li>Energy: <a href="https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025-ONLINE.pdf">FEDIAF Nutritional Guidelines 2025</a>, <a href="https://doi.org/10.1111/jpn.13191">Klein et al. 2019</a>, NRC 2006 and <a href="https://www.aaha.org/wp-content/uploads/2021/06/new-2021-aaha-nutrition-and-weight-management-guidelines-with-ref.pdf">AAHA 2021 guidelines</a>.</li>
+        <li><a href="https://github.com/pmarcowski/doge-growth">Source code on GitHub</a> (GPL-3.0). The fitting pipeline reproduces every number from the open data.</li>
+      </ul>
+    </div>
+  </dialog>
+
+  <div class="snackbar" id="snackbar" role="status" aria-live="polite" hidden></div>
+
+  <script src="model/model.js"></script>
+  <script src="growth.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
